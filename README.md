@@ -4,7 +4,7 @@ This live-build configuration is used to build the reference rootfs
 
 # Dependencies
 
-* qemu-arm-static
+* qemu-user-static
 * live-build
 
 # How to
