@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Remove un-needed packages
+if [ -f /boot/zImage ]; then
+        pacman -Rcs --noconfirm $(pacman -Qqo /boot/zImage) linux-firmware mkinitcpio
+fi
+

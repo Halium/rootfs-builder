@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Change uid/gid of alarm user
+groupmod -g 100000 alarm
+usermod -g 100000 -u 100000 alarm
+chgrp -R alarm /home/alarm/
