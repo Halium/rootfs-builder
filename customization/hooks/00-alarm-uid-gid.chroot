@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Change uid/gid of alarm user
+# This is to avoid user conflict with Android systems/packages uid
+# Android users start at 100000
+groupmod -g 100000 alarm
+usermod -g 100000 -u 100000 alarm
+chgrp -R alarm /home/alarm/
