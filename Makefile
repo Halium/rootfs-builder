@@ -1,5 +1,7 @@
 #rootfs for Archlinux ARM
 
+DEBUG ?= 0
+
 SRCDIR=src
 BUILDDIR=build
 CUSTOMIZATION=customization
@@ -29,7 +31,7 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@curl -L $(ARCHLINUX_SYSTEM_IMAGE_URL) -o $@
 
 .extract: $(SUDO) $(BUILDDIR) $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE)
-	$(info Extracting the archive $(ARCHLINUX_SYSTEM_IMAGE_FILE))
+	$(info Extracting $(ARCHLINUX_SYSTEM_IMAGE_FILE))
 	@$(SUDO) tar --numeric-owner -xzf $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE) -C $(BUILDDIR) 2> /dev/null
 	@touch .extract
 
@@ -40,8 +42,8 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@touch .umount
 
 .patch-rootfs: $(SUDO) $(BUILDDIR) .mount
-	$(info Patching rootfs inside the chroot)
-	@$(SUDO) chroot $(BUILDDIR) /bin/sh /root/$(CUSTOMIZATION)/hooks/chroot-hooks.sh
+	$(info Patching rootfs)
+	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.$(CUSTOMIZATION)/hooks/chroot-hooks.sh $(DEBUG)
 	@touch .patch-rootfs
 
 .rootfs: .patch-rootfs .umount
@@ -56,7 +58,7 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@$(SUDO) mount --bind /tmp $(BUILDDIR)/tmp
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf $(BUILDDIR)/etc/resolv.conf.bak
 	@$(SUDO) cp /etc/resolv.conf $(BUILDDIR)/etc/resolv.conf
-	@$(SUDO) cp -r $(CUSTOMIZATION) $(BUILDDIR)/root/$(CUSTOMIZATION)
+	@$(SUDO) cp -r $(CUSTOMIZATION) $(BUILDDIR)/home/.$(CUSTOMIZATION)
 	@$(SUDO) cp $(QEMU) $(BUILDDIR)/usr/bin/
 	@$(SUDO) cp $(QEMU64) $(BUILDDIR)/usr/bin/
 	@touch .mount-manual
@@ -71,7 +73,7 @@ umount: $(SUDO) $(BUILDDIR)
 	@$(SUDO) umount $(BUILDDIR)/tmp
 	@$(SUDO) umount $(BUILDDIR)
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf.bak $(BUILDDIR)/etc/resolv.conf
-	@$(SUDO) rm -rf $(BUILDDIR)/root/$(CUSTOMIZATION)
+	@$(SUDO) rm -rf $(BUILDDIR)/home/.$(CUSTOMIZATION)
 	@$(SUDO) rm $(BUILDDIR)$(QEMU)
 	@$(SUDO) rm $(BUILDDIR)$(QEMU64)
 	@rm -f .mount-manual

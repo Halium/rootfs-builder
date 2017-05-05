@@ -25,7 +25,15 @@ Simply run the following to generate the rootfs
 make
 ```
 
-### Direct working on the build for debug
+### Build (debug mode)
+
+This mode will force -ex and output of all commands into the chroot
+
+```
+make DEBUG=1
+```
+
+### Chroot into the build
 
 ```
 make mount
