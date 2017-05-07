@@ -2,13 +2,21 @@
 
 DEBUG ?= 0
 
+ARMHOST=$(shell [ $(shell uname -m) == "armv7l" ] && echo 1 || echo 0 )
+
 SRCDIR=src
 BUILDDIR=build
 CUSTOMIZATION=customization
 
 SUDO=/usr/bin/sudo
+
+ifeq ($(ARMHOST),0)
 QEMU=/usr/bin/qemu-arm-static
 QEMU64=/usr/bin/qemu-aarch64-static
+else
+QEMU=
+QEMU64=
+endif
 
 ARCHLINUX_OTA_ARCH=armv7
 ARCHLINUX_SYSTEM_IMAGE_FILE=ArchLinuxARM-$(ARCHLINUX_OTA_ARCH)-latest.tar.gz
@@ -59,8 +67,10 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf $(BUILDDIR)/etc/resolv.conf.bak
 	@$(SUDO) cp /etc/resolv.conf $(BUILDDIR)/etc/resolv.conf
 	@$(SUDO) cp -r $(CUSTOMIZATION) $(BUILDDIR)/home/.$(CUSTOMIZATION)
-	@$(SUDO) cp $(QEMU) $(BUILDDIR)/usr/bin/
-	@$(SUDO) cp $(QEMU64) $(BUILDDIR)/usr/bin/
+	@if [ $(ARMHOST) -eq 0 ]; then \
+		$(SUDO) cp $(QEMU) $(BUILDDIR)/usr/bin/ ;\
+		$(SUDO) cp $(QEMU64) $(BUILDDIR)/usr/bin/ ;\
+	fi
 	@touch .mount-manual
 
 mount: .mount-manual
@@ -74,8 +84,10 @@ umount: $(SUDO) $(BUILDDIR)
 	@$(SUDO) umount $(BUILDDIR)
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf.bak $(BUILDDIR)/etc/resolv.conf
 	@$(SUDO) rm -rf $(BUILDDIR)/home/.$(CUSTOMIZATION)
-	@$(SUDO) rm $(BUILDDIR)$(QEMU)
-	@$(SUDO) rm $(BUILDDIR)$(QEMU64)
+	@if [ $(ARMHOST) -eq 0 ]; then \
+		$(SUDO) rm $(BUILDDIR)$(QEMU) ;\
+		$(SUDO) rm $(BUILDDIR)$(QEMU64) ;\
+	fi
 	@rm -f .mount-manual
 
 $(SRCDIR):
