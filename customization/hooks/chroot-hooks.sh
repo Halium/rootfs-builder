@@ -13,7 +13,7 @@ else
 fi
 
 AURHELPER=pacaur
-ADDITIONAL_BASE_PACKAGES="base-devel git vim bash-completion"
+ADDITIONAL_BASE_PACKAGES="base-devel git rsync vim bash-completion"
 SUDO_USER=alarm
 
 # Go to the parent directory of the directory script
