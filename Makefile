@@ -1,6 +1,7 @@
 #rootfs for Archlinux ARM
 
 DEBUG ?= 0
+DISTCC ?= 0
 
 ARMHOST=$(shell [ $(shell uname -m) == "armv7l" ] && echo 1 || echo 0 )
 
@@ -51,7 +52,7 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 
 .patch-rootfs: $(SUDO) $(BUILDDIR) .mount
 	$(info Patching rootfs)
-	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.$(CUSTOMIZATION)/hooks/chroot-hooks.sh $(DEBUG)
+	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.$(CUSTOMIZATION)/hooks/chroot-hooks.sh $(DEBUG) "$(DISTCC)"
 	@touch .patch-rootfs
 
 .rootfs: .patch-rootfs .umount

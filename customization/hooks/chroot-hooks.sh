@@ -2,6 +2,10 @@
 
 set -e
 
+# 2 Args needed:
+# $1 : Debug mode ?
+# $2 : Distcc master ?
+
 # $1 is used to pass DEBUG flag (0: no debug, else: debug)
 if [ ${1-0} -eq 0 ]; then
 	OUTPUT_FILTER="&> /dev/null"
@@ -11,6 +15,9 @@ else
 	SH_SET="-ex"
 	set -ex
 fi
+
+# $2 is used for distcc (0: no, else: list of IPs)
+DISTCC=$2
 
 AURHELPER=pacaur
 ADDITIONAL_BASE_PACKAGES="base-devel git rsync vim bash-completion"
@@ -33,6 +40,16 @@ eval pacman -Syu --noconfirm $OUTPUT_FILTER
 # Install early minimal requirements
 echo "(chroot) Installing additional base packages"
 eval pacman -S --noconfirm $ADDITIONAL_BASE_PACKAGES $OUTPUT_FILTER
+
+# Distcc ?
+if [ "$DISTCC" != "0" ]; then
+	echo "(chroot) configuration to support distcc (master device) for hosts: $DISTCC"
+	eval pacman -S --noconfirm distcc $OUTPUT_FILTER
+	MAKEFLAGS_J=$(expr $(echo "$DISTCC" | wc -w) + 1)
+	sed -i 's/^BUILDENV=\(.*\)!distcc\(.*\)/BUILDENV=\1distcc\2/' /etc/makepkg.conf
+	sed -i "s/^#DISTCC_HOSTS=/DISTCC_HOSTS=/;s/^DISTCC_HOSTS=.*/DISTCC_HOSTS=\"$DISTCC\"/" /etc/makepkg.conf
+	sed -i "s/^#MAKEFLAGS/MAKEFLAGS/;s/^MAKEFLAGS=.*/MAKEFLAGS=\"-j$MAKEFLAGS_J\"/" /etc/makepkg.conf
+fi
 
 # Sudo - (wheel group will be able to request high privileges without password. alarm is on this group and will permit to support AUR packages installation)
 echo "(chroot) sudo configuration"
@@ -59,6 +76,14 @@ done
 
 # Clean up
 echo "(chroot) Cleaning up"
+
+echo " => downloaded packages"
 rm -f /var/cache/pacman/pkg/*.tar.xz
 eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/hooks/aur-helper.sh cleanup $AURHELPER $OUTPUT_FILTER
 
+if [ "$DISTCC" != "0" ]; then
+	echo " => distcc configuration"
+	sed -i 's/^BUILDENV=\(.*\)distcc\(.*\)/BUILDENV=\1!distcc\2/' /etc/makepkg.conf
+	sed -i "s/^DISTCC_HOSTS=.*/#DISTCC_HOSTS=\"\"/" /etc/makepkg.conf
+	sed -i "s/^MAKEFLAGS=.*/#MAKEFLAGS=\"-j2\"/" /etc/makepkg.conf
+fi
