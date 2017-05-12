@@ -30,6 +30,12 @@ Simply run the following to generate the rootfs
 make
 ```
 
+If you want to specify a stack
+
+```
+make STACK="halium"
+```
+
 ### Build (debug mode)
 
 This mode will force -ex and output of all commands into the chroot

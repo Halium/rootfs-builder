@@ -57,12 +57,12 @@ sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /et
 
 # Install AUR helper (pacaur)
 echo "(chroot) Installing AUR helper ($AURHELPER)"
-eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/hooks/aur-helper.sh install $AURHELPER $OUTPUT_FILTER
+eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/builder/aur-helper.sh install $AURHELPER $OUTPUT_FILTER
 
 # Install package-lists/*.chroot
 echo "(chroot) Installing package-lists/*.chroot"
 echo ' => /!\ Can be long if some packages need to be compiled from AUR. Please be patient ...'
-AURHELPER_FLAGS=$(sh hooks/aur-helper.sh getflags $AURHELPER)
+AURHELPER_FLAGS=$(sh builder/aur-helper.sh getflags $AURHELPER)
 for file in $(find package-lists/ -name "*.chroot"); do
 	echo " => from $file"
 	eval sudo -u $SUDO_USER -i -- $AURHELPER -S $AURHELPER_FLAGS $(cat $file | egrep -v '^#' | tr '\n' ' ') $OUTPUT_FILTER
@@ -80,7 +80,7 @@ echo "(chroot) Cleaning up"
 
 echo " => downloaded packages"
 rm -f /var/cache/pacman/pkg/*.tar.xz
-eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/hooks/aur-helper.sh cleanup $AURHELPER $OUTPUT_FILTER
+eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/builder/aur-helper.sh cleanup $AURHELPER $OUTPUT_FILTER
 
 if [ "$DISTCC" != "0" ]; then
 	echo " => distcc configuration"
