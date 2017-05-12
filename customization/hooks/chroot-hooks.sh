@@ -61,11 +61,12 @@ eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/hooks/aur-helper.sh install $AURHE
 
 # Install package-lists/*.chroot
 echo "(chroot) Installing package-lists/*.chroot"
-if [ -n "$(cat package-lists/*.chroot | tr '\n' ' ')" ]; then
-	echo ' => /!\ Can be long if some packages need to be compiled from AUR. Please be patient ...'
-	AURHELPER_FLAGS=$(sh hooks/aur-helper.sh getflags $AURHELPER)
-	eval sudo -u $SUDO_USER -i -- $AURHELPER -S $AURHELPER_FLAGS $(cat package-lists/*.chroot | tr '\n' ' ') $OUTPUT_FILTER
-fi
+echo ' => /!\ Can be long if some packages need to be compiled from AUR. Please be patient ...'
+AURHELPER_FLAGS=$(sh hooks/aur-helper.sh getflags $AURHELPER)
+for file in $(find package-lists/ -name "*.chroot"); do
+	echo " => from $file"
+	eval sudo -u $SUDO_USER -i -- $AURHELPER -S $AURHELPER_FLAGS $(cat $file | egrep -v '^#' | tr '\n' ' ') $OUTPUT_FILTER
+done
 
 # chroot scripts
 echo "(chroot) Executing hooks/*.chroot"
