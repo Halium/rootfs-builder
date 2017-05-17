@@ -28,7 +28,7 @@ cd $(dirname $(dirname $(readlink -f $0)))
 
 # chroot_early scripts
 echo "(chroot) Executing hooks/*.chroot_early"
-for file in $(find hooks/ -name "*.chroot_early"); do
+for file in $(find hooks/ -name "*.chroot_early" | sort); do
 	echo " => running $file"
 	eval sh $SH_SET $file $OUTPUT_FILTER
 done
@@ -63,14 +63,14 @@ eval sudo -u $SUDO_USER -i -- sh $SH_SET $PWD/builder/aur-helper.sh install $AUR
 echo "(chroot) Installing package-lists/*.chroot"
 echo ' => /!\ Can be long if some packages need to be compiled from AUR. Please be patient ...'
 AURHELPER_FLAGS=$(sh builder/aur-helper.sh getflags $AURHELPER)
-for file in $(find package-lists/ -name "*.chroot"); do
+for file in $(find package-lists/ -name "*.chroot" | sort); do
 	echo " => from $file"
 	eval sudo -u $SUDO_USER -i -- $AURHELPER -S $AURHELPER_FLAGS $(cat $file | egrep -v '^#' | tr '\n' ' ') $OUTPUT_FILTER
 done
 
 # chroot scripts
 echo "(chroot) Executing hooks/*.chroot"
-for file in $(find hooks/ -name "*.chroot"); do
+for file in $(find hooks/ -name "*.chroot" | sort); do
 	echo " => running $file"
 	eval sh $SH_SET $file $OUTPUT_FILTER
 done
