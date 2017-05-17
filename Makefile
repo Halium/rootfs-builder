@@ -1,12 +1,26 @@
 #rootfs for Archlinux ARM
 
+DEBUG ?= 0
+DISTCC ?= 0
+MAKEFLAGS ?= 0
+STACK ?= halium
+
+ARMHOST=$(shell [ $(shell uname -m) == "armv7l" ] && echo 1 || echo 0 )
+
 SRCDIR=src
 BUILDDIR=build
-CUSTOMIZATION=customization
+CUSTOMIZATION=customization/$(STACK)
+BUILDER=builder
 
 SUDO=/usr/bin/sudo
+
+ifeq ($(ARMHOST),0)
 QEMU=/usr/bin/qemu-arm-static
 QEMU64=/usr/bin/qemu-aarch64-static
+else
+QEMU=
+QEMU64=
+endif
 
 ARCHLINUX_OTA_ARCH=armv7
 ARCHLINUX_SYSTEM_IMAGE_FILE=ArchLinuxARM-$(ARCHLINUX_OTA_ARCH)-latest.tar.gz
@@ -14,7 +28,7 @@ ARCHLINUX_SYSTEM_IMAGE_URL=https://archlinuxarm.org/os/$(ARCHLINUX_SYSTEM_IMAGE_
 
 SRC_ARCHLINUX_SYSTEM_IMAGE_FILE=$(SRCDIR)/$(ARCHLINUX_SYSTEM_IMAGE_FILE)
 
-ARCHLINUX_ROOTFS=halium.rootfs.tar.gz
+ARCHLINUX_ROOTFS=$(STACK).rootfs.tar.gz
 
 all: $(ARCHLINUX_ROOTFS)
 
@@ -29,7 +43,7 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@curl -L $(ARCHLINUX_SYSTEM_IMAGE_URL) -o $@
 
 .extract: $(SUDO) $(BUILDDIR) $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE)
-	$(info Extracting the archive $(ARCHLINUX_SYSTEM_IMAGE_FILE))
+	$(info Extracting $(ARCHLINUX_SYSTEM_IMAGE_FILE))
 	@$(SUDO) tar --numeric-owner -xzf $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE) -C $(BUILDDIR) 2> /dev/null
 	@touch .extract
 
@@ -40,14 +54,14 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@touch .umount
 
 .patch-rootfs: $(SUDO) $(BUILDDIR) .mount
-	$(info Patching rootfs inside the chroot)
-	@$(SUDO) chroot $(BUILDDIR) /bin/sh /root/$(CUSTOMIZATION)/hooks/chroot-hooks.sh
+	$(info Patching rootfs)
+	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.customization/builder/chroot-builder.sh $(DEBUG) "$(DISTCC)" "$(MAKEFLAGS)"
 	@touch .patch-rootfs
 
 .rootfs: .patch-rootfs .umount
 	@touch .rootfs
 
-.mount-manual: $(SUDO) $(QEMU) $(QEMU64) $(BUILDDIR) $(CUSTOMIZATION) .extract
+.mount-manual: $(SUDO) $(QEMU) $(QEMU64) $(BUILDDIR) $(CUSTOMIZATION) $(BUILDER) .extract
 	$(info Preparing the build)
 	@$(SUDO) mount --bind $(BUILDDIR) $(BUILDDIR)
 	@$(SUDO) mount --bind /dev $(BUILDDIR)/dev
@@ -56,9 +70,12 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 	@$(SUDO) mount --bind /tmp $(BUILDDIR)/tmp
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf $(BUILDDIR)/etc/resolv.conf.bak
 	@$(SUDO) cp /etc/resolv.conf $(BUILDDIR)/etc/resolv.conf
-	@$(SUDO) cp -r $(CUSTOMIZATION) $(BUILDDIR)/root/$(CUSTOMIZATION)
-	@$(SUDO) cp $(QEMU) $(BUILDDIR)/usr/bin/
-	@$(SUDO) cp $(QEMU64) $(BUILDDIR)/usr/bin/
+	@$(SUDO) cp -r $(CUSTOMIZATION) $(BUILDDIR)/home/.customization
+	@$(SUDO) cp -r $(BUILDER) $(BUILDDIR)/home/.customization/
+	@if [ $(ARMHOST) -eq 0 ]; then \
+		$(SUDO) cp $(QEMU) $(BUILDDIR)/usr/bin/ ;\
+		$(SUDO) cp $(QEMU64) $(BUILDDIR)/usr/bin/ ;\
+	fi
 	@touch .mount-manual
 
 mount: .mount-manual
@@ -71,9 +88,11 @@ umount: $(SUDO) $(BUILDDIR)
 	@$(SUDO) umount $(BUILDDIR)/tmp
 	@$(SUDO) umount $(BUILDDIR)
 	@$(SUDO) mv $(BUILDDIR)/etc/resolv.conf.bak $(BUILDDIR)/etc/resolv.conf
-	@$(SUDO) rm -rf $(BUILDDIR)/root/$(CUSTOMIZATION)
-	@$(SUDO) rm $(BUILDDIR)$(QEMU)
-	@$(SUDO) rm $(BUILDDIR)$(QEMU64)
+	@$(SUDO) rm -rf $(BUILDDIR)/home/.customization
+	@if [ $(ARMHOST) -eq 0 ]; then \
+		$(SUDO) rm $(BUILDDIR)$(QEMU) ;\
+		$(SUDO) rm $(BUILDDIR)$(QEMU64) ;\
+	fi
 	@rm -f .mount-manual
 
 $(SRCDIR):
