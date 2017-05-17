@@ -36,6 +36,12 @@ If you want to specify a stack
 make STACK="halium"
 ```
 
+If you want to set a specific MAKEFLAGS
+
+```
+make MAKEFLAGS="-j6"
+```
+
 ### Build (debug mode)
 
 This mode will force -ex and output of all commands into the chroot

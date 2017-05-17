@@ -2,6 +2,7 @@
 
 DEBUG ?= 0
 DISTCC ?= 0
+MAKEFLAGS ?= 0
 STACK ?= halium
 
 ARMHOST=$(shell [ $(shell uname -m) == "armv7l" ] && echo 1 || echo 0 )
@@ -54,7 +55,7 @@ $(SRC_ARCHLINUX_SYSTEM_IMAGE_FILE): $(SRCDIR)
 
 .patch-rootfs: $(SUDO) $(BUILDDIR) .mount
 	$(info Patching rootfs)
-	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.customization/builder/chroot-builder.sh $(DEBUG) "$(DISTCC)"
+	@$(SUDO) chroot $(BUILDDIR) /bin/sh /home/.customization/builder/chroot-builder.sh $(DEBUG) "$(DISTCC)" "$(MAKEFLAGS)"
 	@touch .patch-rootfs
 
 .rootfs: .patch-rootfs .umount
