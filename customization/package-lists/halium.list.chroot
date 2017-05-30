@@ -1,1 +1,12 @@
 android-tools-adbd
+gdb
+libc6-dbg
+libhybris-dev
+libhybris-test
+lxc1
+lxc-android
+network-manager
+ofono
+ofono-scripts
+strace
+vim

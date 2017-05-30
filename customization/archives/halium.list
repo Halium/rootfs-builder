@@ -1,0 +1,2 @@
+deb http://repo.halium.org @DISTRIBUTION@ main
+deb-src http://repo.halium.org @DISTRIBUTION@ main

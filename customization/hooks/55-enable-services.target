@@ -1,0 +1,8 @@
+#!/bin/bash
+systemctl enable system.mount
+systemctl enable android-mount.service
+
+systemctl enable adbd.service
+systemctl enable lxc@android.service
+
+systemctl set-default multi-user.target
