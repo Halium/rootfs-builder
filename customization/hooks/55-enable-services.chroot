@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/sh -x
+
 systemctl enable system.mount
 systemctl enable android-mount.service
 
