@@ -10,6 +10,7 @@ ofono
 ofono-scripts
 strace
 vim
+nano
 hybris-usb
 dropbear-bin
 dropbear-run
