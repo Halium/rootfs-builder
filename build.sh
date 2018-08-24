@@ -44,7 +44,7 @@ if [ "$VERSION_CODENAME" = "bionic" ]; then
 fi
 
 # make caf or generic
-sed -i s/VARIANT/$i customization/archives/*.list
+sed -i "s/VARIANT/$1/g" customization/archives/*.list
 
 # Copy the customization
 cp -rf customization/* config/
