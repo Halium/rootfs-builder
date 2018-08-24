@@ -14,7 +14,6 @@ lb config \
         --architectures armhf \
         --bootstrap-qemu-arch armhf \
         --bootstrap-qemu-static /usr/bin/qemu-arm-static \
-        --debootstrap-options='--include="gnupg,dirmngr,ca-certificates"' \
         --linux-flavours none \
         --bootloader none \
         --initramfs-compression lzma \
