@@ -5,7 +5,7 @@ export ARCH=armhf
 # configure the live-build
 lb config \
         --mode ubuntu \
-        --distribution xenial \
+        --distribution $DIST \
         --binary-images none \
         --memtest none \
         --source false \
