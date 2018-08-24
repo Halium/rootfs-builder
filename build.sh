@@ -28,8 +28,28 @@ lb config \
         --apt-recommends false \
         --initramfs=none
 
+. /etc/os-release # to get access to version_codename; NB: of host container!
+
+GPG="gpg"
+ARGS=""
+if [ "$VERSION_CODENAME" = "bionic" ]; then
+  apt install -y dirmngr gnupg1
+  ARGS="--batch --verbose"
+  GPG="gpg1"
+fi
+
 # Copy the customization
 cp -rf customization/* config/
+
+rm config/archives/halium.key
+
+$GPG --list-keys
+$GPG \
+  $ARGS \
+  --no-default-keyring \
+  --primary-keyring config/archives/halium.key \
+  --keyserver pool.sks-keyservers.net \
+  --recv-keys 'E47F 5011 FA60 FC1D EBB1  9989 3305 6FA1 4AD3 A421'
 
 # build the rootfs
 lb build
