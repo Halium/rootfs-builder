@@ -51,6 +51,8 @@ $GPG \
   --keyserver pool.sks-keyservers.net \
   --recv-keys 'E47F 5011 FA60 FC1D EBB1  9989 3305 6FA1 4AD3 A421'
 
+chmod 644 config/archives/halium.key
+
 # build the rootfs
 lb build
 
