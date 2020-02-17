@@ -10,7 +10,7 @@ export ARCH=armhf
 # configure the live-build
 lb config \
         --mode ubuntu \
-        --distribution $DIST \
+        --distribution xenial \
         --binary-images none \
         --memtest none \
         --source false \
@@ -37,7 +37,7 @@ lb config \
 
 GPG="gpg"
 ARGS=""
-if [ "$VERSION_CODENAME" = "bionic" ]; then
+if [ "$VERSION_CODENAME" = "tina" ]; then # yada kendi sisteminizin ismi
   apt install -y dirmngr gnupg1
   ARGS="--batch --verbose"
   GPG="gpg1"
